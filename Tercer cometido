@@ -1,0 +1,114 @@
+'''importar la libreria tkinter para la parte de la interfaz grafica'''
+from tkinter import *
+'''Se importa la libreria de mongo ya que python necesita un driver para
+acceder a la base de datos de MongoDB'''
+import pymongo
+
+MONGO_HOST="localhost"
+MONGO_PUERTO="27017"
+MONGO_TIEMPO_FUERA=1000
+'''Seleccionar la direcion especifica de la base'''
+MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+'''Seleccionar la base de datos especifica'''
+MONGO_BASEDATOS="PruebaJhosueChica"
+'''Seleccionar la colleccion especifica'''
+MONGO_COLECCION="ciudades"
+'''Instanciacion de objeto a partir de la clase pymongo'''
+cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+'''Especificacion de la base de datos'''
+baseDatos=cliente[MONGO_BASEDATOS]
+'''Especificacion de la coleccion'''
+coleccion=baseDatos[MONGO_COLECCION]
+
+class MyWindow:
+   ''' 
+   Clase en donde se ingresan todos los datos que especifican los limites de la busqueda
+   dentro de la libreria de MongoDB. 
+   ...
+   Atributos
+   ----------
+   boton1 : Button
+      Boton que ejecuta la busqueda.
+   entrada1 : Entry
+      Primera de entrada de tipo de parametro.
+   entrada2 : Entry
+      Primera de entrada de especificacion del tipo de parametro.
+   entrada3 : Entry
+      Segunda de entrada de tipo de parametro.
+   entrada4 : Entry
+      Segunda de entrada de especificacion del tipo de parametro.
+   ...
+   Metodos
+   -------
+   __init__(self,win):
+      Construye todos los atributos necesarios para el objeto MyWindow.
+   buscar(self):
+      Se pasan los 2 parametros de especificacion en la busqueda y
+      presenta la lista objetos resultantes en la busqueda.
+   '''
+   def __init__(self, win):
+      '''
+      Construye todos los atributos necesarios para el objeto MyWindow.
+      ...
+      Parametros
+      ----------
+      win : Tk
+      '''
+      self.boton1=Button(win, text='Buscar', command=self.buscar).place(x=120, y=250)
+      self.entrada1=Entry(bd=3,bg="light grey")
+      self.entrada2=Entry(bd=3,bg="light grey")
+      self.entrada3=Entry(bd=3,bg="light grey")
+      self.entrada4=Entry(bd=3,bg="light grey")
+      self.entrada1.place(x=140, y=50)
+      self.entrada2.place(x=140, y=100)
+      self.entrada3.place(x=140, y=150)
+      self.entrada4.place(x=140, y=200)
+      
+   def buscar(self):
+      '''
+      Se pasan los parametros de especificacion en la busqueda y
+      presenta la lista objetos resultantes en la busqueda.
+      ...
+      Parametros
+      ----------
+      *No tiene parametros*
+      '''
+      par1=str(self.entrada1.get())
+      esp1=str(self.entrada2.get())
+      par2=str(self.entrada3.get())
+      esp2=str(self.entrada4.get())
+      '''Se comprueba si la primera especificacion es de tipo numerico'''
+      if esp1.isnumeric() == True:
+         esp1=int(esp1)
+      '''Se comprueba si la segunda especificacion es de tipo numerico'''
+      if esp2.isnumeric() == True:
+         esp2=int(esp2)
+      '''Creamos la ventana de fondo'''
+      root = Tk()
+      '''Creamos un Widgets Listbox'''
+      listb = Listbox(root)
+      myquery = {par1: {"$eq": esp1},par2: {"$eq": esp2}}
+      mydoc = coleccion.find(myquery)
+      '''Insertamos los nombres de la lista en el Listbox'''
+      for item in mydoc:
+        listb.insert(0,item)
+      '''Hacemos el pack del widget'''
+      listb.configure(width=150, height=30)
+      listb.pack()
+
+if __name__ == '__main__':
+   '''Instanciar objeto de la clase Tk'''
+   window=Tk()
+   titulo = Label( text="Ingrese sus Parametros",font=("Arial",15), fg="black").place(x=45,y=10)
+   texto1=Label( text='Tipo 1',font=("Arial",11), fg="black").place(x=20, y=50)
+   texto2=Label( text='Especificacion 1',font=("Arial",11), fg="black").place(x=20, y=100)
+   texto3=Label( text='Tipo 2',font=("Arial",11), fg="black").place(x=20, y=150)
+   texto4=Label( text='Especificacion 2',font=("Arial",11), fg="black").place(x=20, y=200)
+   '''Instanciar objeto de la clase MyWindow'''
+   mywin=MyWindow(window)
+   '''Especificacion del titulo de la ventana emergente'''
+   window.title('Busqueda de objeto especifico')
+   '''Especificacion del tamaño de la ventana emergente'''
+   window.geometry("300x300+10+10")
+   '''ventana emergente'''
+   window.mainloop()
